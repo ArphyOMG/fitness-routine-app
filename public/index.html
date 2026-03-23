@@ -6,6 +6,7 @@
 <title>IRON LOG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -310,6 +311,44 @@
   .hist-item-del:hover { color: var(--accent); }
   .hist-empty-page { text-align: center; color: var(--text3); font-family: var(--font-mono); font-size: 13px; padding: 80px 0; }
 
+  /* ─── ANALYSIS TAB ─── */
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 14px 12px;
+  }
+  .stat-label {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: var(--font-mono); font-size: 22px; font-weight: 600;
+    color: var(--text); line-height: 1;
+  }
+  .stat-unit { font-size: 11px; color: var(--text3); margin-left: 2px; }
+  .stat-delta {
+    font-family: var(--font-mono); font-size: 10px; margin-top: 5px;
+  }
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.down { color: var(--accent); }
+  .stat-delta.flat { color: var(--text3); }
+  .chart-block { margin-bottom: 24px; }
+  .chart-label {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .chart-wrap {
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 12px; position: relative; height: 160px;
+  }
+  .analysis-empty {
+    color: var(--text3); font-family: var(--font-mono); font-size: 12px;
+    text-align: center; padding: 50px 0; line-height: 2.2;
+  }
+
   /* ─── SCROLLBAR ─── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -547,12 +586,14 @@ function renderPanel() {
       <button class="tab-btn ${state.activeTab==='desc'?'active':''}" onclick="switchTab('desc')">설명</button>
       <button class="tab-btn ${state.activeTab==='log'?'active':''}" onclick="switchTab('log')">기록하기</button>
       <button class="tab-btn ${state.activeTab==='hist'?'active':''}" onclick="switchTab('hist')">기록 이력</button>
+      <button class="tab-btn ${state.activeTab==='analysis'?'active':''}" onclick="switchTab('analysis')">분석</button>
     </div>
   `;
   const body = document.getElementById('panelBody');
   if (state.activeTab === 'desc') body.innerHTML = renderDescTab(ex);
   if (state.activeTab === 'log') body.innerHTML = renderLogTab();
   if (state.activeTab === 'hist') body.innerHTML = renderHistTab(ex);
+  if (state.activeTab === 'analysis') { body.innerHTML = renderAnalysisTab(ex); drawCharts(ex); }
 }
 
 function renderDescTab(ex) {
@@ -618,6 +659,128 @@ function renderHistTab(ex) {
   `).join('');
 }
 
+// ─── ANALYTICS ───
+function epley1RM(weight, reps) {
+  if (reps === 1) return weight;
+  return Math.round(weight * (1 + reps / 30));
+}
+
+function getAnalyticsData(ex) {
+  const logs = LogStore.getLogs()
+    .filter(l => l.exerciseId === ex.id)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  return logs.map(l => {
+    const vol = l.sets.reduce((sum, s) => sum + (s.reps * s.weight), 0);
+    const best1RM = Math.max(...l.sets.map(s => epley1RM(s.weight, s.reps)));
+    const bestWeight = Math.max(...l.sets.map(s => s.weight));
+    return { date: l.date, volume: vol, est1rm: best1RM, bestWeight };
+  });
+}
+
+function renderAnalysisTab(ex) {
+  const data = getAnalyticsData(ex);
+  if (data.length < 2) {
+    return `<div class="analysis-empty">기록이 2개 이상 있어야<br>분석 데이터를 볼 수 있습니다.<br><br>기록하기 탭에서 운동을 기록해보세요!</div>`;
+  }
+
+  const latest = data[data.length - 1];
+  const prev   = data[data.length - 2];
+
+  function delta(curr, prev, unit) {
+    const d = curr - prev;
+    if (d === 0) return `<div class="stat-delta flat">— 변동 없음</div>`;
+    const sign = d > 0 ? '+' : '';
+    const cls  = d > 0 ? 'up' : 'down';
+    const arrow = d > 0 ? '▲' : '▼';
+    return `<div class="stat-delta ${cls}">${arrow} ${sign}${d}${unit} (직전 대비)</div>`;
+  }
+
+  const allVols  = data.map(d => d.volume);
+  const all1RMs  = data.map(d => d.est1rm);
+  const maxVol   = Math.max(...allVols);
+  const max1RM   = Math.max(...all1RMs);
+
+  return `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">최신 볼륨</div>
+        <div class="stat-value">${latest.volume.toLocaleString()}<span class="stat-unit">kg</span></div>
+        ${delta(latest.volume, prev.volume, 'kg')}
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">추정 1RM</div>
+        <div class="stat-value">${latest.est1rm}<span class="stat-unit">kg</span></div>
+        ${delta(latest.est1rm, prev.est1rm, 'kg')}
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">최고 볼륨</div>
+        <div class="stat-value">${maxVol.toLocaleString()}<span class="stat-unit">kg</span></div>
+        <div class="stat-delta flat">전체 기간 최고</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">최고 1RM</div>
+        <div class="stat-value">${max1RM}<span class="stat-unit">kg</span></div>
+        <div class="stat-delta flat">전체 기간 최고</div>
+      </div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-label">날짜별 볼륨 추이</div>
+      <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-label">추정 1RM 추이 (Epley)</div>
+      <div class="chart-wrap"><canvas id="chart1RM"></canvas></div>
+    </div>
+  `;
+}
+
+let _charts = {};
+function drawCharts(ex) {
+  const data = getAnalyticsData(ex);
+  if (data.length < 2) return;
+
+  // destroy old instances
+  Object.values(_charts).forEach(c => c.destroy());
+  _charts = {};
+
+  const labels = data.map(d => d.date.slice(5)); // MM-DD
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#1e1e1e', borderColor: '#333', borderWidth: 1,
+      titleColor: '#999', bodyColor: '#e8e8e8',
+      titleFont: { family: 'IBM Plex Mono', size: 10 },
+      bodyFont:  { family: 'IBM Plex Mono', size: 12 },
+    }},
+    scales: {
+      x: { grid: { color: '#1e1e1e' }, ticks: { color: '#555', font: { family: 'IBM Plex Mono', size: 9 }, maxRotation: 0 } },
+      y: { grid: { color: '#1e1e1e' }, ticks: { color: '#555', font: { family: 'IBM Plex Mono', size: 9 } } }
+    }
+  };
+
+  const accentColor = '#e84400';
+  const greenColor  = '#22c55e';
+
+  function makeDataset(values, color, label) {
+    return {
+      label, data: values,
+      borderColor: color, backgroundColor: color + '22',
+      borderWidth: 2, pointRadius: 4, pointBackgroundColor: color,
+      pointBorderColor: '#0f0f0f', pointBorderWidth: 2,
+      tension: 0.3, fill: true,
+    };
+  }
+
+  _charts.vol = new Chart(
+    document.getElementById('chartVolume'),
+    { type: 'line', data: { labels, datasets: [makeDataset(data.map(d=>d.volume), accentColor, '볼륨')] }, options: baseOpts }
+  );
+  _charts.rm = new Chart(
+    document.getElementById('chart1RM'),
+    { type: 'line', data: { labels, datasets: [makeDataset(data.map(d=>d.est1rm), greenColor, '추정 1RM')] }, options: baseOpts }
+  );
+}
+
 function switchTab(tab) {
   state.activeTab = tab;
   renderPanel();
@@ -651,6 +814,7 @@ function saveLog() {
   state.sets = [{reps:'', weight:''}];
   showToast('저장되었습니다 ✓');
   renderPanel();
+  if (state.activeTab === 'analysis') drawCharts(state.activeEx);
 }
 
 function deleteLogAndRefresh(id) {
