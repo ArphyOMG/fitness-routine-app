@@ -243,9 +243,12 @@
           </div>
           <div class="filters" id="filterBtns">
             <button class="filter-btn active" data-cat="전체">전체</button>
-            <button class="filter-btn" data-cat="푸시">푸시</button>
-            <button class="filter-btn" data-cat="풀">풀</button>
+            <button class="filter-btn" data-cat="가슴">가슴</button>
+            <button class="filter-btn" data-cat="등">등</button>
             <button class="filter-btn" data-cat="하체">하체</button>
+            <button class="filter-btn" data-cat="어깨">어깨</button>
+            <button class="filter-btn" data-cat="이두">이두</button>
+            <button class="filter-btn" data-cat="삼두">삼두</button>
             <button class="filter-btn" data-cat="코어">코어</button>
           </div>
         </div>
@@ -340,27 +343,27 @@ const LogStore = {
 
 // ─── EXERCISES ───
 const EXERCISES = [
-  { id:'rdl', name:'루마니안 데드리프트', category:'풀', primaryMuscle:'햄스트링, 둔근', equipment:'바벨',
+  { id:'rdl', name:'루마니안 데드리프트', category:'하체', primaryMuscle:'햄스트링, 둔근', equipment:'바벨',
     desc:'루마니안 데드리프트는 햄스트링과 둔근을 집중적으로 단련하는 힌지 패턴 운동입니다. 바를 몸 가까이 유지하며 골반을 뒤로 밀어 내리는 것이 핵심입니다.',
     tips:['바가 항상 정강이와 허벅지에 가깝게 이동하도록 유지','내려갈 때 햄스트링의 스트레치 느낌을 확인','올라올 때 둔근으로 밀어올리는 느낌에 집중'],
     cautions:['허리가 둥글게 말리지 않도록 주의','무릎이 과도하게 앞으로 이동하지 않게 고정'] },
-  { id:'latpulldown', name:'랫 풀 다운', category:'풀', primaryMuscle:'광배근, 대원근', equipment:'케이블 머신',
+  { id:'latpulldown', name:'랫 풀 다운', category:'등', primaryMuscle:'광배근, 대원근', equipment:'케이블 머신',
     desc:'랫 풀 다운은 케이블 머신을 이용해 광배근과 대원근을 발달시키는 대표적인 풀 운동입니다.',
     tips:['그립 너비는 어깨 너비보다 약간 넓게 설정','팔꿈치를 몸 옆으로 모으며 광배근 수축 의식','상체를 약간 뒤로 기울여 수직 당김 효과 극대화'],
     cautions:['과도한 상체 후경 금지, 30도 이내 유지','반동으로 당기지 말고 천천히 컨트롤'] },
-  { id:'barbellrow', name:'바벨 로우', category:'풀', primaryMuscle:'광배근, 승모근, 능형근', equipment:'바벨',
+  { id:'barbellrow', name:'바벨 로우', category:'등', primaryMuscle:'광배근, 승모근, 능형근', equipment:'바벨',
     desc:'바벨 로우는 등 전체를 두껍게 발달시키는 핵심 복합 운동입니다.',
     tips:['당길 때 팔꿈치를 뒤로 세게 밀어내는 느낌','복부에 힘을 주어 척추 중립 유지','내려놓을 때 광배근이 늘어나는 것 느끼기'],
     cautions:['허리가 과도하게 아치되지 않도록 주의','반동보다 근육 수축에 집중'] },
-  { id:'pendlayrow', name:'펜들레이 로우', category:'풀', primaryMuscle:'광배근, 상부 등', equipment:'바벨',
+  { id:'pendlayrow', name:'펜들레이 로우', category:'등', primaryMuscle:'광배근, 상부 등', equipment:'바벨',
     desc:'펜들레이 로우는 각 반복마다 바를 바닥에 완전히 내려놓는 변형 바벨 로우입니다.',
     tips:['상체를 바닥과 거의 평행하게 유지','폭발적으로 당겨 흉추 아래 배꼽 위에 닿게','매 반복 바닥에 완전히 내려 리셋'],
     cautions:['허리 부담이 크므로 충분한 코어 강화 후 시작','초보자는 가벼운 무게로 폼 먼저 익히기'] },
-  { id:'benchpress', name:'바벨 벤치프레스', category:'푸시', primaryMuscle:'대흉근, 삼두근', equipment:'바벨, 벤치',
+  { id:'benchpress', name:'바벨 벤치프레스', category:'가슴', primaryMuscle:'대흉근, 삼두근', equipment:'바벨, 벤치',
     desc:'바벨 벤치프레스는 가슴 근육과 삼두근을 동시에 자극하는 대표 푸시 운동입니다.',
     tips:['날개뼈를 벤치에 단단히 고정해 어깨 안정성 확보','바를 가슴 아래 부분(유두 아래)에 착지','발을 바닥에 단단히 고정해 레그 드라이브 활용'],
     cautions:['어깨가 앞으로 말리지 않도록 주의','과도한 아치는 허리 부상 위험'] },
-  { id:'inclinedumbbell', name:'인클라인 덤벨 프레스', category:'푸시', primaryMuscle:'상부 대흉근, 전면 삼각근', equipment:'덤벨, 인클라인 벤치',
+  { id:'inclinedumbbell', name:'인클라인 덤벨 프레스', category:'가슴', primaryMuscle:'상부 대흉근, 전면 삼각근', equipment:'덤벨, 인클라인 벤치',
     desc:'인클라인 덤벨 프레스는 30~45도 경사 벤치에서 상부 흉근과 전면 삼각근을 집중 단련합니다.',
     tips:['경사 각도는 30~45도로 설정','덤벨을 내릴 때 가슴 바깥쪽이 늘어나는 스트레치 느끼기','밀어올릴 때 덤벨을 살짝 안쪽으로 모아 흉근 수축 강화'],
     cautions:['과도하게 내리면 어깨 관절에 부담','좌우 균형 유지에 집중'] },
@@ -376,11 +379,11 @@ const EXERCISES = [
     desc:'힙 스러스트는 둔근을 집중적으로 발달시키는 최고의 운동 중 하나입니다.',
     tips:['최고 지점에서 1~2초간 둔근을 세게 조여 유지','발 위치는 무릎이 90도가 되는 거리로 조절','목을 중립으로 유지하고 턱을 살짝 당기기'],
     cautions:['바가 골반뼈를 직접 누르지 않도록 패드 사용','허리로 들어올리지 않도록 주의'] },
-  { id:'cablecurl', name:'케이블 컬', category:'풀', primaryMuscle:'상완이두근', equipment:'케이블 머신',
+  { id:'cablecurl', name:'케이블 컬', category:'이두', primaryMuscle:'상완이두근', equipment:'케이블 머신',
     desc:'케이블 컬은 이두근 전체 범위에 걸쳐 일정한 장력을 제공하는 효율적인 이두 운동입니다.',
     tips:['팔꿈치를 몸 옆에 고정하고 상완이 흔들리지 않게','완전히 내릴 때 이두근이 늘어나는 것 느끼기','수축 시 새끼손가락을 위로 비트는 슈피네이션 의식'],
     cautions:['팔꿈치가 앞뒤로 이동하지 않도록 고정','반동 사용 금지'] },
-  { id:'triceppushdown', name:'트라이셉 푸쉬다운', category:'푸시', primaryMuscle:'삼두근', equipment:'케이블 머신',
+  { id:'triceppushdown', name:'트라이셉 푸쉬다운', category:'삼두', primaryMuscle:'삼두근', equipment:'케이블 머신',
     desc:'트라이셉 푸쉬다운은 케이블을 이용해 삼두근의 세 갈래를 효과적으로 자극하는 고립 운동입니다.',
     tips:['팔꿈치를 몸 옆에 고정하여 삼두만 움직이기','완전히 내릴 때 삼두근이 완전히 수축되는 느낌','손목을 중립으로 유지'],
     cautions:['어깨가 앞으로 말리거나 팔꿈치가 벌어지지 않게','과도한 무게로 등으로 보상하는 자세 주의'] },
@@ -392,11 +395,11 @@ const EXERCISES = [
     desc:'케이블 크런치는 케이블을 이용해 복직근에 지속적인 장력을 제공하는 코어 운동입니다.',
     tips:['엉덩이가 이동하지 않도록 고정하고 상체만 굽히기','수축 시 배꼽을 바닥으로 당기는 느낌','천천히 내려가며 복근의 긴장을 유지'],
     cautions:['고관절 굴곡으로 당기지 않도록 주의','목에 힘을 주지 않기'] },
-  { id:'ohp', name:'오버헤드 프레스', category:'푸시', primaryMuscle:'전면/측면 삼각근, 삼두근', equipment:'바벨',
+  { id:'ohp', name:'오버헤드 프레스', category:'어깨', primaryMuscle:'전면/측면 삼각근, 삼두근', equipment:'바벨',
     desc:'오버헤드 프레스는 삼각근과 삼두근을 주로 자극하는 상체 수직 푸시 운동입니다.',
     tips:['손목이 꺾이지 않도록 바 중앙을 단단히 그립','밀어올릴 때 머리를 살짝 뒤로 피하고 락아웃에서 귀 사이로 넣기','복부와 둔근에 힘을 주어 허리 과신전 방지'],
     cautions:['허리를 과도하게 뒤로 젖히지 않기','어깨 유연성 부족 시 덤벨 버전으로 시작'] },
-  { id:'facepull', name:'페이스 풀', category:'풀', primaryMuscle:'후면 삼각근, 회전근개', equipment:'케이블 머신',
+  { id:'facepull', name:'페이스 풀', category:'어깨', primaryMuscle:'후면 삼각근, 회전근개', equipment:'케이블 머신',
     desc:'페이스 풀은 후면 삼각근과 회전근개를 강화하는 교정적 운동입니다.',
     tips:['로프 어태치먼트를 귀 높이로 당겨 외회전 동작 강조','팔꿈치를 어깨 높이로 유지하며 당기기','수축 시 날개뼈를 뒤로 모으는 느낌'],
     cautions:['너무 무거운 무게로 상체가 흔들리지 않게','동작을 급하게 하지 않고 컨트롤 유지'] },
@@ -405,7 +408,6 @@ const EXERCISES = [
     tips:['발끝을 살짝 안쪽으로 돌려 햄스트링 내측 강조','수축 최고점에서 1초 정지하여 자극 극대화','내릴 때 천천히 햄스트링을 늘리며 편심성 수축 활용'],
     cautions:['허리가 들리지 않도록 골반을 패드에 고정','무릎 통증 시 즉시 중단'] }
 ];
-
 // ─── STATE ───
 let state = {
   search:'', cat:'전체', activeEx:null,
