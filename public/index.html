@@ -543,7 +543,19 @@ function epley(w,r) { return r===1?w:Math.round(w*(1+r/30)); }
 
 function renderAnalysisTab(logs) {
   if (logs.length < 2) return `<div class="analysis-empty">기록이 2개 이상 있어야<br>분석 데이터를 볼 수 있습니다.<br><br>기록하기 탭에서 운동을 기록해보세요!</div>`;
-  const data = logs.map(l=>({ date:l.date, volume:l.sets.reduce((s,x)=>s+x.reps*x.weight,0), est1rm:Math.max(...l.sets.map(s=>epley(s.weight,s.reps))) }));
+
+  // 날짜별 그루핑 — 볼륨 합산, 1RM 최고값
+  const grouped = {};
+  logs.forEach(l => {
+    const vol = l.sets.reduce((s,x) => s + x.reps * x.weight, 0);
+    const rm  = Math.max(...l.sets.map(s => epley(s.weight, s.reps)));
+    if (!grouped[l.date]) grouped[l.date] = { volume: 0, est1rm: 0 };
+    grouped[l.date].volume += vol;
+    grouped[l.date].est1rm = Math.max(grouped[l.date].est1rm, rm);
+  });
+  const data = Object.entries(grouped)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .map(([date, val]) => ({ date, ...val }));
   const latest=data[data.length-1], prev=data[data.length-2];
   const maxVol=Math.max(...data.map(d=>d.volume)), max1rm=Math.max(...data.map(d=>d.est1rm));
   function delta(curr,prev,unit) {
@@ -564,7 +576,19 @@ function renderAnalysisTab(logs) {
 let _charts={};
 function drawCharts(logs) {
   Object.values(_charts).forEach(c=>c.destroy()); _charts={};
-  const data=logs.map(l=>({ label:l.date.slice(5), volume:l.sets.reduce((s,x)=>s+x.reps*x.weight,0), est1rm:Math.max(...l.sets.map(s=>epley(s.weight,s.reps))) }));
+
+  // 날짜별 그루핑 — 볼륨 합산, 1RM 최고값
+  const grouped = {};
+  logs.forEach(l => {
+    const vol = l.sets.reduce((s,x) => s + x.reps * x.weight, 0);
+    const rm  = Math.max(...l.sets.map(s => epley(s.weight, s.reps)));
+    if (!grouped[l.date]) grouped[l.date] = { volume: 0, est1rm: 0 };
+    grouped[l.date].volume += vol;
+    grouped[l.date].est1rm = Math.max(grouped[l.date].est1rm, rm);
+  });
+  const data = Object.entries(grouped)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .map(([date, val]) => ({ label: date.slice(5), ...val }));
   const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1e1e',borderColor:'#333',borderWidth:1,titleColor:'#999',bodyColor:'#e8e8e8',titleFont:{family:'IBM Plex Mono',size:10},bodyFont:{family:'IBM Plex Mono',size:12}}},scales:{x:{grid:{color:'#1e1e1e'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9},maxRotation:0}},y:{grid:{color:'#1e1e1e'},ticks:{color:'#555',font:{family:'IBM Plex Mono',size:9}}}}};
   function ds(vals,color,label){return{label,data:vals,borderColor:color,backgroundColor:color+'22',borderWidth:2,pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#0f0f0f',pointBorderWidth:2,tension:.3,fill:true};}
   _charts.vol=new Chart(document.getElementById('chartVolume'),{type:'line',data:{labels:data.map(d=>d.label),datasets:[ds(data.map(d=>d.volume),'#e84400','볼륨')]},options:opts});
