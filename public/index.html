@@ -230,6 +230,7 @@
     <div class="header-right">
       <span class="user-name" id="userInfo"></span>
       <button class="header-btn" id="histPageBtn">기록 이력</button>
+      <button class="header-btn" id="dummyBtn" style="display:none;border-color:#22c55e;color:#22c55e" onclick="window.injectDummy()">🧪 더미 주입</button>
       <button class="logout-btn" onclick="window.logout()">로그아웃</button>
     </div>
   </header>
@@ -295,12 +296,18 @@ window.loginWithGoogle = async () => {
 };
 window.logout = async () => { await signOut(auth); };
 
+const TEST_UID = "IjFX2sKuepOPrgbcieZNQpwK7TT2";
+
 onAuthStateChanged(auth, async user => {
   currentUser = user;
   if (user) {
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'block';
     document.getElementById('userInfo').textContent = user.displayName || user.email;
+    // 테스트 계정이면 더미 주입 버튼 표시
+    if (user.uid === TEST_UID) {
+      document.getElementById('dummyBtn').style.display = 'inline-block';
+    }
     LogStore.invalidate();
     renderGrid();
   } else {
@@ -570,6 +577,56 @@ function drawCharts(logs) {
   _charts.vol=new Chart(document.getElementById('chartVolume'),{type:'line',data:{labels:data.map(d=>d.label),datasets:[ds(data.map(d=>d.volume),'#e84400','볼륨')]},options:opts});
   _charts.rm =new Chart(document.getElementById('chart1RM'),  {type:'line',data:{labels:data.map(d=>d.label),datasets:[ds(data.map(d=>d.est1rm), '#22c55e','1RM')]}, options:opts});
 }
+
+// ─── DUMMY DATA ───
+window.injectDummy = async () => {
+  if (currentUser.uid !== TEST_UID) return;
+  const btn = document.getElementById('dummyBtn');
+  btn.disabled = true; btn.textContent = '⏳ 주입 중...';
+
+  function daysAgo(n) {
+    const d = new Date(); d.setDate(d.getDate() - n);
+    return d.toISOString().slice(0,10);
+  }
+  function w(base, si, step=2.5) { return Math.round((base + si*step)*2)/2; }
+
+  const logs = [
+    // 가슴
+    ...[[56,0],[53,3],[50,7],[47,10],[44,14],[41,18],[38,21],[35,25],[32,28],[29,32]].map(([d,si])=>({date:daysAgo(d),exerciseId:'benchpress',sets:[{reps:8,weight:w(60,si,2.5)},{reps:6,weight:w(65,si,2.5)},{reps:5,weight:w(67.5,si,2.5)},{reps:8,weight:w(60,si,2.5)}]})),
+    ...[[57,0],[51,2],[45,4],[39,6],[33,8],[27,10],[21,12],[15,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'inclinedumbbell',sets:[{reps:10,weight:w(24,si,1)},{reps:8,weight:w(26,si,1)},{reps:8,weight:w(26,si,1)},{reps:10,weight:w(24,si,1)}]})),
+    // 등
+    ...[[55,0],[52,2],[49,4],[46,6],[43,8],[40,10],[37,12],[34,14],[31,16],[28,18]].map(([d,si])=>({date:daysAgo(d),exerciseId:'latpulldown',sets:[{reps:12,weight:w(55,si,2.5)},{reps:10,weight:w(60,si,2.5)},{reps:8,weight:w(62.5,si,2.5)},{reps:12,weight:w(55,si,2.5)}]})),
+    ...[[54,0],[48,2],[42,4],[36,6],[30,8],[24,10],[18,12],[12,14],[6,16]].map(([d,si])=>({date:daysAgo(d),exerciseId:'barbellrow',sets:[{reps:8,weight:w(60,si,2.5)},{reps:8,weight:w(62.5,si,2.5)},{reps:6,weight:w(65,si,2.5)},{reps:8,weight:w(60,si,2.5)}]})),
+    ...[[53,0],[46,2],[39,4],[32,6],[25,8],[18,10],[11,12]].map(([d,si])=>({date:daysAgo(d),exerciseId:'pendlayrow',sets:[{reps:6,weight:w(55,si,2.5)},{reps:6,weight:w(57.5,si,2.5)},{reps:5,weight:w(60,si,2.5)}]})),
+    // 하체
+    ...[[58,0],[55,2],[51,4],[47,6],[43,8],[39,10],[35,12],[31,14],[27,16],[23,18]].map(([d,si])=>({date:daysAgo(d),exerciseId:'squat',sets:[{reps:8,weight:w(70,si,2.5)},{reps:6,weight:w(80,si,2.5)},{reps:5,weight:w(85,si,2.5)},{reps:8,weight:w(75,si,2.5)}]})),
+    ...[[58,0],[52,3],[46,6],[40,9],[34,12],[28,15],[22,18],[16,21]].map(([d,si])=>({date:daysAgo(d),exerciseId:'legpress',sets:[{reps:12,weight:w(100,si,5)},{reps:10,weight:w(110,si,5)},{reps:8,weight:w(120,si,5)},{reps:12,weight:w(100,si,5)}]})),
+    ...[[57,0],[50,3],[43,6],[36,9],[29,12],[22,15],[15,18],[8,21]].map(([d,si])=>({date:daysAgo(d),exerciseId:'hipthrust',sets:[{reps:12,weight:w(60,si,2.5)},{reps:10,weight:w(70,si,2.5)},{reps:8,weight:w(80,si,2.5)},{reps:12,weight:w(60,si,2.5)}]})),
+    ...[[56,0],[49,3],[42,6],[35,9],[28,12],[21,15],[14,18],[7,21]].map(([d,si])=>({date:daysAgo(d),exerciseId:'rdl',sets:[{reps:10,weight:w(60,si,2.5)},{reps:8,weight:w(70,si,2.5)},{reps:8,weight:w(70,si,2.5)},{reps:10,weight:w(65,si,2.5)}]})),
+    ...[[55,0],[48,2],[41,4],[34,6],[27,8],[20,10],[13,12],[6,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'legcurl',sets:[{reps:12,weight:w(40,si,2.5)},{reps:10,weight:w(45,si,2.5)},{reps:8,weight:w(47.5,si,2.5)}]})),
+    // 어깨
+    ...[[56,0],[49,2],[42,4],[35,6],[28,8],[21,10],[14,12],[7,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'ohp',sets:[{reps:8,weight:w(40,si,1.25)},{reps:6,weight:w(45,si,1.25)},{reps:5,weight:w(47.5,si,1.25)},{reps:8,weight:w(40,si,1.25)}]})),
+    ...[[54,0],[47,2],[40,4],[33,6],[26,8],[19,10],[12,12],[5,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'facepull',sets:[{reps:15,weight:w(15,si,1.25)},{reps:15,weight:w(17.5,si,1.25)},{reps:12,weight:w(20,si,1.25)}]})),
+    // 이두
+    ...[[55,0],[48,2],[41,4],[34,6],[27,8],[20,10],[13,12],[6,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'cablecurl',sets:[{reps:12,weight:w(20,si,1.25)},{reps:10,weight:w(22.5,si,1.25)},{reps:10,weight:w(22.5,si,1.25)},{reps:12,weight:w(20,si,1.25)}]})),
+    // 삼두
+    ...[[55,0],[48,2],[41,4],[34,6],[27,8],[20,10],[13,12],[6,14]].map(([d,si])=>({date:daysAgo(d),exerciseId:'triceppushdown',sets:[{reps:12,weight:w(25,si,1.25)},{reps:10,weight:w(27.5,si,1.25)},{reps:10,weight:w(27.5,si,1.25)},{reps:12,weight:w(25,si,1.25)}]})),
+    // 코어
+    ...[[56,0],[49,3],[42,6],[35,9],[28,12],[21,15],[14,18],[7,21]].map(([d,si])=>({date:daysAgo(d),exerciseId:'plank',sets:[{reps:60,weight:0},{reps:60,weight:0},{reps:45,weight:0}]})),
+    ...[[54,0],[47,3],[40,6],[33,9],[26,12],[19,15],[12,18],[5,21]].map(([d,si])=>({date:daysAgo(d),exerciseId:'cablecrunch',sets:[{reps:15,weight:w(30,si,2.5)},{reps:12,weight:w(35,si,2.5)},{reps:12,weight:w(35,si,2.5)}]})),
+  ];
+
+  const col = collection(db, 'users', TEST_UID, 'logs');
+  for (let i=0; i<logs.length; i++) {
+    await addDoc(col, logs[i]);
+    if ((i+1) % 20 === 0) btn.textContent = `⏳ ${i+1}/${logs.length}`;
+  }
+  LogStore.invalidate();
+  btn.disabled=false; btn.textContent='✅ 주입 완료';
+  btn.style.borderColor='#22c55e'; btn.style.color='#22c55e';
+  showToast(`총 ${logs.length}개 더미 로그 주입 완료!`);
+  renderGrid();
+};
 
 // ─── CONTROLS ───
 window.switchTab    = (t)    => { state.activeTab=t; renderPanel(); };
